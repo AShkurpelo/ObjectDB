@@ -6,7 +6,8 @@ using System.Threading.Tasks;
 
 namespace ObjectDB
 {
-    public class Class1
+    public enum SerializeType
     {
+        Binary
     }
 }

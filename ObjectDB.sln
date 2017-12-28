@@ -5,6 +5,8 @@ VisualStudioVersion = 15.0.27004.2009
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ObjectDB", "ObjectDB\ObjectDB.csproj", "{B885508E-A98F-445B-8259-4F52BC61CD5E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ObjectDB_Example", "ObjectDB_Example\ObjectDB_Example.csproj", "{C08ABFAC-6FA8-44D2-8872-592A8319140A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{B885508E-A98F-445B-8259-4F52BC61CD5E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B885508E-A98F-445B-8259-4F52BC61CD5E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B885508E-A98F-445B-8259-4F52BC61CD5E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C08ABFAC-6FA8-44D2-8872-592A8319140A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C08ABFAC-6FA8-44D2-8872-592A8319140A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C08ABFAC-6FA8-44D2-8872-592A8319140A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C08ABFAC-6FA8-44D2-8872-592A8319140A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
