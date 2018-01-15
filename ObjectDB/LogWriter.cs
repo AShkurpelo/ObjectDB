@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace ObjectDB
 {
-    public static class Logger
+    public static class LogWriter
     {
         public static bool Enabled { get; set; } = true;
 
@@ -15,9 +15,9 @@ namespace ObjectDB
 
         public static string LoggingFileName { get; set; } = "log";
 
-        public static FileExtension LoggingFileExt { get; set; } = FileExtension.LOG;
+        public static LogFileExtension LoggingLogFileExt { get; set; } = LogFileExtension.LOG;
 
-        private static string FullPath => $"{LoggingDirectoryPath}/{LoggingFileName}.{LoggingFileExt}";
+        private static string FullPath => $"{LoggingDirectoryPath}/{LoggingFileName}.{LoggingLogFileExt}";
 
         public static void Log(string toLog)
         {

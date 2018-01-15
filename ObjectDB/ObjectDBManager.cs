@@ -1,31 +1,31 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Reflection;
-using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ObjectDB
 {
 
-    public class ObjectDBManager
+    public sealed class ObjectDBManager : IObjectDBManager
     {
         #region Fields: Private
 
-        private string _directory;
+        private readonly string _directory;
+
         private SerializeType _serializeType;
+
+        private readonly ObjectDBConnection _connection;
+
+        //private ObjectDescriptor _descriptor;
 
         #endregion
 
         #region Delegates: Private
 
-        private Func<string, DBBaseObject> readFync;
+        private Func<string, Guid, DBObject> _readFync;
 
-        private Func<DBBaseObject, string, bool> writeFync;
+        private Func<DBObject, string, bool> _writeFync;
 
         #endregion
 
@@ -39,8 +39,8 @@ namespace ObjectDB
                 switch (value)
                 {
                     case (SerializeType.Binary):
-                        readFync = ReadFromBinaryFile;
-                        writeFync = WriteToBinaryFile;
+                        _readFync = ReadFromBinaryFile;
+                        _writeFync = WriteToBinaryFile;
                         break;
                 }
                 this._serializeType = value;
@@ -51,143 +51,174 @@ namespace ObjectDB
 
         #region Constructors: Public
 
-        public ObjectDBManager()
+        public ObjectDBManager(ObjectDBConnection connection)
         {
-            _directory = Directory.GetCurrentDirectory();
+            _connection = connection;
+            _directory = connection.GetDBDirectoryPath();
             SerializeType = SerializeType.Binary;
-        }
-
-        public ObjectDBManager(string directoryPath) : this()
-        {
-            _directory = directoryPath;
         }
 
         #endregion
 
         #region Methods: Private
 
-        private string FilePath(string objectTypeName) => $"{_directory}/{objectTypeName}";
-
-        private IEnumerable<MemberInfo> GetTypeDBMembers(Type objType)
+        private bool WriteToBinaryFile(DBObject objData, string objectName)
         {
-            return objType.GetMembers().Where(member => Attribute.IsDefined(member, typeof(ObjectDBAttribute)));
-        }
-
-        private DBBaseObject PrepareObjectData(DBBaseObject obj)
-        {
-            DBBaseObject objData = new DBBaseObject();
-            var objType = obj.GetType();
-            foreach (var member in GetTypeDBMembers(objType))
-            {
-                objData[member.Name] = obj.GetType().GetField(member.Name).GetValue(obj);
-            }
-            return objData;
-        }
-
-        private bool WriteToBinaryFile(DBBaseObject objData, string filePath)
-        {
-            filePath += ".dat";
             BinaryFormatter formatter = new BinaryFormatter();
-            using (FileStream fs = new FileStream(filePath, FileMode.OpenOrCreate))
+            var fileName = objectName + ".dat";
+            bool isFirst = _connection.ContainsObject(objectName);
+            var fs = _connection.GetFileStream(fileName);
+
+            try
             {
-                try
+                var objectDescriptor = new ObjectDescriptor(_directory, objectName, _connection.GetFileStream(objectName + ".descriptor"));
+                if (!objectDescriptor.Exists(objData.GetId()))
                 {
-                    formatter.Serialize(fs, objData);
+                    objData.Info = objectDescriptor.AddInstance(objData.GetType().Name);
+                    _connection.AddObjectInstance(objData.GetType().Name);
                 }
-                catch (Exception e)
-                {
-                    string errorMessage = $"Error: can't write object to path {filePath}.";
-                    Logger.Log(errorMessage);
-                    return false;
-                }
+                fs.Position = objData.Info.Position;
+                formatter.Serialize(fs, objData.Members);
+            }
+            catch (Exception e)
+            {
+                string errorMessage = $"Error: can't write instance {objectName} to database.";
+                LogWriter.Log(errorMessage);
+                return false;
             }
             return true;
         }
 
-        private bool WriteToFile(DBBaseObject obj, string filePath)
+        private DBObject ReadFromBinaryFile(string objectName, Guid instanceId)
         {
-            var objData = PrepareObjectData(obj);
-            
-            return writeFync(objData, filePath);
-        }
-
-        private DBBaseObject ReadFromBinaryFile(string filePath)
-        {
-            filePath += ".dat";
-            DBBaseObject obj = new DBBaseObject();
-
-            if (!File.Exists(filePath))
-            {
-                string errorMessage = $"Error: object not found by path: {filePath}";
-                Logger.Log(errorMessage);
-                return obj;
-            }
-
             BinaryFormatter formatter = new BinaryFormatter();
-            using (FileStream fs = new FileStream(filePath, FileMode.OpenOrCreate))
+            var fullFileName = objectName + ".dat";
+            if (!Exists(objectName))
             {
-                try
-                {
-                    obj = (DBBaseObject)formatter.Deserialize(fs);
-                }
-                catch (Exception e)
-                {
-                    string errorMessage = $"Error: can't read object from path: {filePath}.";
-                    Logger.Log(errorMessage);
-                    return obj;
-                }
+                string errorMessage = $"Error: database don't contain object {objectName}";
+                LogWriter.Log(errorMessage);
+                return null;
+            }
+            var fs = _connection.GetFileStream(fullFileName);
+            DBObject result = new DBObject();
+
+            var objectDescriptor = new ObjectDescriptor(_directory, objectName, _connection.GetFileStream(objectName + ".descriptor"));
+            if (!objectDescriptor.Exists(instanceId))
+            {
+                string errorMessage = $"Error: can't read not existing instance of object {objectName}";
+                LogWriter.Log(errorMessage);
+                return null;
             }
 
-            return obj;
+            var instanceInfo = objectDescriptor.MemberDescriptions.First(member => member.Id == instanceId);
+            result.Info = instanceInfo;
+            fs.Position = instanceInfo.Position;
+
+            result.Members = (Dictionary<string, object>)formatter.Deserialize(fs);
+
+            return result;
         }
 
-        private DBBaseObject ReadFromFile(string filePath)
-        {
-            return readFync(filePath);
-        }
+        //private DBObject ReadFromFile(string filePath)
+        //{
+        //    return _readFync(filePath);
+        //}
 
         #endregion
 
         #region Methods: Public
 
-        public bool SaveToDB(DBBaseObject obj)
+        public Dictionary<string, long> GetObjectInfos()
         {
-            string filePath = this.FilePath(obj.GetType().Name);
-
-            return WriteToFile(obj, filePath);
+            return _connection.GetObjectInfo();
         }
 
-        public DBBaseObject FetchFromDB(string objectTypeName)
+        public Dictionary<string, Guid> GetInstanceInfos(string objectName)
         {
-            string filePath = this.FilePath(objectTypeName);
-
-            return ReadFromFile(filePath);
+            if (!Exists(objectName))
+            {
+                string errorMessage = $"Error: can't get instance infos, database don't contain object {objectName}.";
+                LogWriter.Log(errorMessage);
+                return null;
+            }
+            var tempDescriptor = new ObjectDescriptor(_directory, objectName, _connection.GetFileStream(objectName + ".descriptor"));
+            return tempDescriptor.MemberDescriptions.ToDictionary(member => member.InstanceName, member => member.Id);
         }
 
+        public bool Exists(string objectName)
+        {
+            return _connection.ContainsObject(objectName);
+        }
+
+        public bool SaveToDB(DBObject obj)
+        {
+            obj.FillMembers();
+            return _writeFync(obj, obj.GetType().Name);
+        }
+
+        public DBObject FetchFromDB(string objectName, string instanceName)
+        {
+            if (!Exists(objectName))
+            {
+                string errorMessage = $"Error: database don't contain object {objectName}";
+                LogWriter.Log(errorMessage);
+                return null;
+            }
+            var descriptor = new ObjectDescriptor(_directory, objectName, _connection.GetFileStream(instanceName + ".descriptor"));
+            if (!descriptor.MemberDescriptions.Exists(member => member.InstanceName == instanceName))
+            {
+                string errorMessage = $"Error: can't read not existing instance of object {objectName}";
+                LogWriter.Log(errorMessage);
+                return null;
+            }
+
+            var instanceId = descriptor.MemberDescriptions.First(member => member.InstanceName == instanceName).Id;
+            return _readFync(objectName, instanceId);
+        }
+
+        public DBObject FetchFromDB(string objectName, Guid instanceId)
+        {
+            return _readFync(objectName, instanceId);
+        }
+
+        public bool TryFetchFromDB<T>(out T saveTo, string instanceName)
+        {
+            saveTo = default(T);
+            return false;
+        }
+
+        public bool TryFetchFromDB<T>(out T saveTo, Guid instanceId)
+        {
+            saveTo = default(T);
+            return false;
+        }
+
+        //TODO: delete this shit
         public bool TryFetchFromDB<T>(out T objectType)
         {
             objectType = default(T);
-            string typeName = typeof(T).Name;
-            DBBaseObject dbBaseObj;
-            try
-            {
-                dbBaseObj = FetchFromDB(typeName);
-            }
-            catch (Exception e)
-            {
-                string errorMessage = $"Error: can't fetch object {typeName}";
-                Logger.Log(errorMessage);
-                return false;
-            }
-            dynamic dynamicObj = dbBaseObj;
-            foreach (var memberName in dbBaseObj.GetDynamicMemberNames())
-            {
+            //string typeName = typeof(T).Name;
+            //DBObject dbBaseObj;
+            //try
+            //{
+            //    dbBaseObj = FetchFromDB(typeName);
+            //}
+            //catch (Exception e)
+            //{
+            //    string errorMessage = $"Error: can't fetch object {typeName}";
+            //    LogWriter.Log(errorMessage);
+            //    return false;
+            //}
+            //dynamic dynamicObj = dbBaseObj;
+            //foreach (var memberName in dbBaseObj.GetDynamicMemberNames())
+            //{
                 
-            }
+            //}
 
             return true;
         }
 
         #endregion
     }
+
 }

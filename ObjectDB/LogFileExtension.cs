@@ -6,16 +6,16 @@ using System.Threading.Tasks;
 
 namespace ObjectDB
 {
-    public sealed class FileExtension
+    public sealed class LogFileExtension
     {
 
         private readonly String name;
         private readonly int value;
 
-        public static readonly FileExtension TXT = new FileExtension(1, "txt");
-        public static readonly FileExtension LOG = new FileExtension(2, "log");
+        public static readonly LogFileExtension TXT = new LogFileExtension(1, "txt");
+        public static readonly LogFileExtension LOG = new LogFileExtension(2, "log");
 
-        private FileExtension(int value, String name)
+        private LogFileExtension(int value, String name)
         {
             this.name = name;
             this.value = value;

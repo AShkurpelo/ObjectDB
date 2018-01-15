@@ -1,20 +1,78 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Dynamic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Reflection;
 
 namespace ObjectDB
 {
     [Serializable]
-    public class DBObject : DBBaseObject
+    public class DBObject : DBBaseObject //DBBaseObject can't be internal
     {
-        [ObjectDB]
-        internal Guid __id__;
+        #region Fields: Internal
 
-        IEnumerable<string> MemberNames => this.GetType().GetMembers()
-                    .Where(member => Attribute.IsDefined(member, typeof(ObjectDBAttribute)))
-                    .Select(member => member.Name);
+        internal InstnaceInfo Info;
+        
+        #endregion
+
+        #region Properties: Private
+
+        private IEnumerable<MemberInfo> MemberInfos => GetType().GetMembers()
+            .Where(member => Attribute.IsDefined(member, typeof(ObjectDBAttribute)));
+
+        #endregion
+
+        #region Constructors: Protected
+
+        protected internal DBObject()
+        {
+            Info = new InstnaceInfo(Guid.Empty, null, -1);
+            FillMembers();
+        }
+
+        #endregion
+
+        #region Methods: Private
+        
+        private object GetMemberValue(MemberInfo memberInfo)
+        {
+            switch (memberInfo.MemberType)
+            {
+                case MemberTypes.Field:
+                    return ((FieldInfo)memberInfo).GetValue(this);
+                case MemberTypes.Property:
+                    return ((PropertyInfo)memberInfo).GetValue(this);
+                default:
+                    throw new NotImplementedException();
+            }
+        }
+
+        #endregion
+
+        #region Methods: Internal
+
+        internal void FillMembers()
+        {
+            foreach (var memberInfo in MemberInfos)
+            {
+                Members[memberInfo.Name] = GetMemberValue(memberInfo);
+            }
+        }
+
+        #endregion
+
+        #region Methods: Public
+
+        public Guid GetId()
+        {
+            return Info.Id;
+        }
+
+        public string GetName()
+        {
+            return Info.InstanceName;
+        }
+
+        #endregion
+
     }
 }

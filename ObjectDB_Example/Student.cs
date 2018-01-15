@@ -7,10 +7,10 @@ using ObjectDB;
 
 namespace ObjectDB_Example
 {
-    class Student : DBObject
+    public class Student : DBObject
     {
         [ObjectDB]
-        private bool _estChe;
+        public bool _estChe;
 
         [ObjectDB]
         public string Name { get; set; }
@@ -21,6 +21,7 @@ namespace ObjectDB_Example
         [ObjectDB]
         public int Hostel { get; set; }
 
+        [ObjectDB]
         public bool HasFacilities { get; set; }
         
         public Student()
@@ -30,13 +31,13 @@ namespace ObjectDB_Example
             this._estChe = false;
         }
 
-        public Student(string name, string department, int hostel, bool hasFacilities)
+        public Student(string name, string department, int hostel, bool hasFacilities = false)
         {
             this.Name = name;
             this.Department = department;
             this.Hostel = hostel;
             this.HasFacilities = hasFacilities;
-            _estChe = false;
+            this._estChe = false;
         }
 
         public void PrepareForExam(string subject) => this._estChe = true;

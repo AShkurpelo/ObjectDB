@@ -6,10 +6,11 @@ using System.Threading.Tasks;
 
 namespace ObjectDB
 {
-    [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property | AttributeTargets.Parameter)]
+    [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property)]
     public class ObjectDBAttribute : Attribute
     {
         public ObjectDBAttribute()
-        { }
+        {
+        }
     }
 }

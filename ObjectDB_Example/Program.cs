@@ -12,32 +12,18 @@ namespace ObjectDB_Example
     {
         static void Main(string[] args)
         {
-            ObjectDBManager dbManager = new ObjectDBManager();
-            Student student = new Student("Alexander Shkurpelo", "FICT", 3, false);
-            string name = student.Name;
-            dbManager.SaveToDB(student);
-
-            var dbStudent = student as DBObject;
-            var sn = dbStudent["Name"];
-
-            dynamic obj = dbManager.FetchFromDB("Student");
-            var dbObj = obj as DBBaseObject;
+            Student student = new Student("Alexander Shkurpelo", "FICT", 3);
             
 
-            foreach (var memberName in dbObj.GetDynamicMemberNames())
+            using (ObjectDBConnection connection = new ObjectDBConnection("UniversityDB"))
             {
-                Console.WriteLine($"{memberName}={dbObj[memberName]}");
+                ObjectDBManager manager = new ObjectDBManager(connection);
+                manager.SaveToDB(student);
+
+                
             }
-
-            var objName = obj.Name;
-
-
-            int hostelNum;
-            ((DBBaseObject)obj).TryGetTypedMemberValue("Hostel", out hostelNum);
-
-            //Guid id2 = obj.__Id__;
-
-            Type curType = obj.GetType();
+            
+            bool breakPoint = true;
         }
     }
 }

@@ -41,11 +41,16 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DBBaseObject.cs" />
+    <Compile Include="DBDescriptor.cs" />
     <Compile Include="DBObject.cs" />
-    <Compile Include="FileExtension.cs" />
-    <Compile Include="Logger.cs" />
+    <Compile Include="InstnaceInfo.cs" />
+    <Compile Include="IObjectDBManager.cs" />
+    <Compile Include="ObjectDBConnection.cs" />
+    <Compile Include="LogFileExtension.cs" />
+    <Compile Include="LogWriter.cs" />
     <Compile Include="ObjectDBAttribute.cs" />
     <Compile Include="ObjectDBManager.cs" />
+    <Compile Include="ObjectDescriptor.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SerializeType.cs" />
   </ItemGroup>
