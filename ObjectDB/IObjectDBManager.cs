@@ -30,8 +30,9 @@ namespace ObjectDB
         /// <para></para>
         /// </summary>
         /// <param name="obj">Object instance written to database</param>
+        /// <param name="instanceName">Name of instance in database</param>
         /// <returns></returns>
-        bool SaveToDB(DBObject obj);
+        bool SaveToDB(DBObject obj, string instanceName);
 
         DBObject FetchFromDB(string objectName, string instanceName);
         DBObject FetchFromDB(string objectName, Guid instanceId);

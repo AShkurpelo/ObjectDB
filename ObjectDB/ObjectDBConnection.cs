@@ -41,11 +41,6 @@ namespace ObjectDB
 
         #region Destructors
 
-        ~ObjectDBConnection()
-        {
-            ReleaseUnmanagedResources();
-        }
-
         #endregion
 
         #region Methods: Private
@@ -114,16 +109,12 @@ namespace ObjectDB
             _descriptor.AddObjectInstance(objectName);
         }
 
+        internal void SaveDataBaseDescriptor()
+        {
+            _descriptor.Save();
+        }
+
         #endregion
-
-        //#region Static Methods: Internal
-
-        //internal static ObjectDBConnection GetActiveConnection(string dbDirectoryPath)
-        //{
-        //    return _activeConnections[dbDirectoryPath];
-        //}
-
-        //#endregion
 
         #region Methods: Public
 
@@ -153,16 +144,8 @@ namespace ObjectDB
 
         #endregion
 
-        private void ReleaseUnmanagedResources()
-        {
-            _descriptor = null;
-            _lockedFiles.Clear();
-        }
-
         public void Dispose()
         {
-            ReleaseUnmanagedResources();
-            GC.SuppressFinalize(this);
         }
     }
 }

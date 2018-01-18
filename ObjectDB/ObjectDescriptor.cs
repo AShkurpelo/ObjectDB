@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.Remoting.Messaging;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 using System.Threading.Tasks;
@@ -26,24 +27,16 @@ namespace ObjectDB
 
         #region Constructors: Public
 
-        public ObjectDescriptor(string dbDirictoryPath, string objectName, FileStream fs, bool isNew = false)
+        public ObjectDescriptor(FileStream fs, bool isNew = false)
         {
-            _path = string.Join("\\", dbDirictoryPath, objectName + ".descriptor");
+            MemberDescriptions = new List<InstnaceInfo>();
+            _path = fs.Name;
             _fs = fs;
 
-            if (File.ReadAllBytes(_path).Length != 0)
+            if (new FileInfo(_path).Length != 0)
                 Read();
             else
                 Write();
-        }
-
-        #endregion
-
-        #region Destructors
-
-        ~ObjectDescriptor()
-        {
-            Write();
         }
 
         #endregion
@@ -55,16 +48,28 @@ namespace ObjectDB
             return MemberDescriptions.Exists(member => member.Id == Id);
         }
 
-        internal InstnaceInfo AddInstance(string instanceName)
+        internal bool Exists(string instanceName)
         {
-            var newInstanceInfo = new InstnaceInfo(Guid.NewGuid(), instanceName, _fs.Length);
+            return MemberDescriptions.Exists(member => member.InstanceName == instanceName);
+        }
+
+        internal InstnaceInfo AddInstance(string instanceName, long position, Type type)
+        {
+            var newInstanceInfo = new InstnaceInfo(Guid.NewGuid(), instanceName, position, type);
             MemberDescriptions.Add(newInstanceInfo);
             return newInstanceInfo;
+        }
+
+        internal void Save()
+        {
+            Write();
         }
 
         #endregion
 
         #region Methods: Private
+
+
 
         private void Read()
         {

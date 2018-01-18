@@ -13,15 +13,18 @@ namespace ObjectDB
 
         public long Position { get; internal set; }
 
+        public Type Type { get; internal set; }
+
         #endregion
 
         #region Constructors: Internal
 
-        internal InstnaceInfo(Guid id, string instanceName, long position)
+        internal InstnaceInfo(Guid id, string instanceName, long position, Type type)
         {
             Id = id;
             InstanceName = instanceName;
             Position = position;
+            Type = type;
         }
 
         #endregion

@@ -25,7 +25,7 @@ namespace ObjectDB
 
         protected internal DBObject()
         {
-            Info = new InstnaceInfo(Guid.Empty, null, -1);
+            Info = new InstnaceInfo(Guid.Empty, null, -1, null);
             FillMembers();
         }
 

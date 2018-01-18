@@ -25,7 +25,7 @@ namespace ObjectDB
 
         private Func<string, Guid, DBObject> _readFync;
 
-        private Func<DBObject, string, bool> _writeFync;
+        private Func<DBObject, string, string, bool> _writeFync;
 
         #endregion
 
@@ -62,27 +62,31 @@ namespace ObjectDB
 
         #region Methods: Private
 
-        private bool WriteToBinaryFile(DBObject objData, string objectName)
+        private bool WriteToBinaryFile(DBObject objData, string objectName, string instanceName)
         {
-            BinaryFormatter formatter = new BinaryFormatter();
+            var formatter = new BinaryFormatter();
             var fileName = objectName + ".dat";
-            bool isFirst = _connection.ContainsObject(objectName);
+            //bool isFirst = _connection.ContainsObject(objectName);
             var fs = _connection.GetFileStream(fileName);
 
             try
             {
-                var objectDescriptor = new ObjectDescriptor(_directory, objectName, _connection.GetFileStream(objectName + ".descriptor"));
-                if (!objectDescriptor.Exists(objData.GetId()))
+                var objectDescriptor = new ObjectDescriptor(_connection.GetFileStream(objectName + ".descriptor"));
+
+                if (!objectDescriptor.Exists(instanceName))
                 {
-                    objData.Info = objectDescriptor.AddInstance(objData.GetType().Name);
-                    _connection.AddObjectInstance(objData.GetType().Name);
+                    objData.Info = objectDescriptor.AddInstance(instanceName, fs.Position, objData.GetType());
+                    _connection.AddObjectInstance(objectName);
                 }
                 fs.Position = objData.Info.Position;
                 formatter.Serialize(fs, objData.Members);
+
+                objectDescriptor.Save();
+                _connection.SaveDataBaseDescriptor();
             }
             catch (Exception e)
             {
-                string errorMessage = $"Error: can't write instance {objectName} to database.";
+                var errorMessage = $"Error: can't write instance {objectName} to database.";
                 LogWriter.Log(errorMessage);
                 return false;
             }
@@ -91,21 +95,21 @@ namespace ObjectDB
 
         private DBObject ReadFromBinaryFile(string objectName, Guid instanceId)
         {
-            BinaryFormatter formatter = new BinaryFormatter();
+            var formatter = new BinaryFormatter();
             var fullFileName = objectName + ".dat";
             if (!Exists(objectName))
             {
-                string errorMessage = $"Error: database don't contain object {objectName}";
+                var errorMessage = $"Error: database don't contain object {objectName}";
                 LogWriter.Log(errorMessage);
                 return null;
             }
             var fs = _connection.GetFileStream(fullFileName);
-            DBObject result = new DBObject();
+            var result = new DBObject();
 
-            var objectDescriptor = new ObjectDescriptor(_directory, objectName, _connection.GetFileStream(objectName + ".descriptor"));
+            var objectDescriptor = new ObjectDescriptor(_connection.GetFileStream(objectName + ".descriptor"));
             if (!objectDescriptor.Exists(instanceId))
             {
-                string errorMessage = $"Error: can't read not existing instance of object {objectName}";
+                var errorMessage = $"Error: can't read not existing instance of object {objectName}";
                 LogWriter.Log(errorMessage);
                 return null;
             }
@@ -118,11 +122,6 @@ namespace ObjectDB
 
             return result;
         }
-
-        //private DBObject ReadFromFile(string filePath)
-        //{
-        //    return _readFync(filePath);
-        //}
 
         #endregion
 
@@ -137,11 +136,11 @@ namespace ObjectDB
         {
             if (!Exists(objectName))
             {
-                string errorMessage = $"Error: can't get instance infos, database don't contain object {objectName}.";
+                var errorMessage = $"Error: can't get instance infos, database don't contain object {objectName}.";
                 LogWriter.Log(errorMessage);
                 return null;
             }
-            var tempDescriptor = new ObjectDescriptor(_directory, objectName, _connection.GetFileStream(objectName + ".descriptor"));
+            var tempDescriptor = new ObjectDescriptor(_connection.GetFileStream(objectName + ".descriptor"));
             return tempDescriptor.MemberDescriptions.ToDictionary(member => member.InstanceName, member => member.Id);
         }
 
@@ -150,24 +149,25 @@ namespace ObjectDB
             return _connection.ContainsObject(objectName);
         }
 
-        public bool SaveToDB(DBObject obj)
+        public bool SaveToDB(DBObject obj, string instanceName)//, bool replaceIfExist), bool uniqueName = false, bool unique = false)             
         {
             obj.FillMembers();
-            return _writeFync(obj, obj.GetType().Name);
+            var objectName = obj.GetType().Name;
+            return _writeFync(obj, objectName, instanceName);
         }
 
         public DBObject FetchFromDB(string objectName, string instanceName)
         {
             if (!Exists(objectName))
             {
-                string errorMessage = $"Error: database don't contain object {objectName}";
+                var errorMessage = $"Error: database don't contain object {objectName}";
                 LogWriter.Log(errorMessage);
                 return null;
             }
-            var descriptor = new ObjectDescriptor(_directory, objectName, _connection.GetFileStream(instanceName + ".descriptor"));
+            var descriptor = new ObjectDescriptor(_connection.GetFileStream(objectName + ".descriptor"));
             if (!descriptor.MemberDescriptions.Exists(member => member.InstanceName == instanceName))
             {
-                string errorMessage = $"Error: can't read not existing instance of object {objectName}";
+                var errorMessage = $"Error: can't read not existing instance of object {objectName}";
                 LogWriter.Log(errorMessage);
                 return null;
             }

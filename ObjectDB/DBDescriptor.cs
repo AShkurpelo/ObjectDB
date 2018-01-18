@@ -24,8 +24,8 @@ namespace ObjectDB
 
         public DBDescriptor(string dbDirictoryPath)
         {
-            _path = string.Join("\\", dbDirictoryPath, "db.descriptor");
             ObjectDict = new Dictionary<string, long>();
+            _path = string.Join("\\", dbDirictoryPath, "db.descriptor");
 
             if (File.Exists(_path))
                 Read();
@@ -36,20 +36,16 @@ namespace ObjectDB
 
         #endregion
 
-        #region Desctructors
-
-        ~DBDescriptor()
-        {
-            Write();
-        }
-
-        #endregion
-
         #region Methods: Internal
 
-        internal void AddObjectInstance(string objectName)
+        internal void AddObjectInstance(string objectName, long count = 1)
         {
-            ObjectDict[objectName] = ObjectDict.ContainsKey(objectName) ? ObjectDict[objectName] + 1 : 1;
+            ObjectDict[objectName] = ObjectDict.ContainsKey(objectName) ? ObjectDict[objectName] + count : 1;
+        }
+
+        internal void Save()
+        {
+            Write();
         }
 
         #endregion
