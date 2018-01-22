@@ -16,7 +16,7 @@ namespace ObjectDB
 
         #region Properties: Private
 
-        private IEnumerable<MemberInfo> MemberInfos => GetType().GetMembers()
+        internal IEnumerable<MemberInfo> MemberInfos => GetType().GetMembers()
             .Where(member => Attribute.IsDefined(member, typeof(ObjectDBAttribute)));
 
         #endregion
@@ -25,14 +25,14 @@ namespace ObjectDB
 
         protected internal DBObject()
         {
-            Info = new InstnaceInfo(Guid.Empty, null, -1, null);
+            Info = new InstnaceInfo(GetType().Name, Guid.Empty, null, -1);
             FillMembers();
         }
 
         #endregion
 
         #region Methods: Private
-        
+
         private object GetMemberValue(MemberInfo memberInfo)
         {
             switch (memberInfo.MemberType)
@@ -58,18 +58,38 @@ namespace ObjectDB
             }
         }
 
+        internal void SetMemberValue(MemberInfo memberInfo, object value)
+        {
+            switch (memberInfo.MemberType)
+            {
+                case MemberTypes.Field:
+                    ((FieldInfo)memberInfo).SetValue(this, value);
+                    break;
+                case MemberTypes.Property:
+                    ((PropertyInfo)memberInfo).SetValue(this, value);
+                    break;
+                default:
+                    throw new NotImplementedException();
+            }
+        }
+
         #endregion
 
         #region Methods: Public
 
-        public Guid GetId()
+        public Guid DBGetId()
         {
             return Info.Id;
         }
 
-        public string GetName()
+        public string DBGetName()
         {
             return Info.InstanceName;
+        }
+
+        public string DBGetObjectName()
+        {
+            return Info.ObjectName;
         }
 
         #endregion

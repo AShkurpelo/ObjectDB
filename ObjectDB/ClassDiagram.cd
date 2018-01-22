@@ -4,86 +4,86 @@
     <Position X="0.5" Y="0.5" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAgAAACAAABIAACAAAAAAAAAAEAAAAACA=</HashCode>
-      <FileName>DBBaseObject.cs</FileName>
+      <FileName>DBObject\DBBaseObject.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="ObjectDB.DBDescriptor">
     <Position X="4.5" Y="0.5" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AACAAIAAAAACAAAAAAAAAAEgAAAAAAAAAAAAQAEAAAA=</HashCode>
-      <FileName>DBDescriptor.cs</FileName>
+      <FileName>Descriptors\DBDescriptor.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="ObjectDB.DBObject">
     <Position X="0.5" Y="3.75" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AAAAAAEAAAAAAAAAAAAAAAAAABAAAAAAAAAAQEIABAA=</HashCode>
-      <FileName>DBObject.cs</FileName>
+      <HashCode>EAAAgAEAAAgAAAAAAAAAAAAAABAAAAAAAAAEQEAAAAA=</HashCode>
+      <FileName>DBObject\DBObject.cs</FileName>
     </TypeIdentifier>
   </Class>
-  <Class Name="ObjectDB.InstnaceInfo" Collapsed="true">
+  <Class Name="ObjectDB.InstnaceInfo">
     <Position X="12" Y="0.75" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AAACAAAAAAAAAAAgAAAAAAAAAAAQAAAAAAAAAAAAAAA=</HashCode>
-      <FileName>InstnaceInfo.cs</FileName>
+      <HashCode>AAACAAAAAAAAAAAgAAAAIAAAAAAQAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>DBObject\InstnaceInfo.cs</FileName>
     </TypeIdentifier>
   </Class>
-  <Class Name="ObjectDB.LogFileExtension" Collapsed="true">
-    <Position X="12" Y="2.5" Width="1.5" />
+  <Class Name="ObjectDB.LogFileExtension">
+    <Position X="8.75" Y="5.25" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAEgAAAAEAAAAAAAAAAAEACAAAAAAAAAAAAA=</HashCode>
-      <FileName>LogFileExtension.cs</FileName>
+      <FileName>Log\LogFileExtension.cs</FileName>
     </TypeIdentifier>
   </Class>
-  <Class Name="ObjectDB.LogWriter" Collapsed="true">
-    <Position X="12" Y="4" Width="1.5" />
+  <Class Name="ObjectDB.LogWriter">
+    <Position X="4.5" Y="3.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>CAAAAAAAAAAAAIAAAAAACAAAAAgACAAAAAAEAAAAAAA=</HashCode>
-      <FileName>LogWriter.cs</FileName>
+      <FileName>Log\LogWriter.cs</FileName>
     </TypeIdentifier>
   </Class>
-  <Class Name="ObjectDB.ObjectDBAttribute" Collapsed="true">
-    <Position X="12" Y="1.5" Width="1.5" />
+  <Class Name="ObjectDB.ObjectDBAttribute">
+    <Position X="6.5" Y="5.5" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
-      <FileName>ObjectDBAttribute.cs</FileName>
+      <FileName>Attributes\ObjectDBAttribute.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="ObjectDB.ObjectDBConnection" BaseTypeListCollapsed="true">
     <Position X="8.75" Y="0.5" Width="2.75" />
     <TypeIdentifier>
       <HashCode>EABCAYAAACAABAAAAAAACDAAAQAAAAACABAAQAEAAAA=</HashCode>
-      <FileName>ObjectDBConnection.cs</FileName>
+      <FileName>ObjectDB\ObjectDBConnection.cs</FileName>
     </TypeIdentifier>
     <Lollipop Position="0.2" />
   </Class>
   <Class Name="ObjectDB.ObjectDBManager" BaseTypeListCollapsed="true">
     <Position X="2.25" Y="3" Width="2" />
     <TypeIdentifier>
-      <HashCode>WAAAAAAIAAAAAAAAAAACAAAgAEAAEAAAAAACAAGABAA=</HashCode>
-      <FileName>ObjectDBManager.cs</FileName>
+      <HashCode>SAAAAAAIAAAAAAAAAAACAAAgAEAAEAAAAAACAAGABAA=</HashCode>
+      <FileName>ObjectDB\ObjectDBManager.cs</FileName>
     </TypeIdentifier>
     <Lollipop Position="0.167" />
   </Class>
   <Class Name="ObjectDB.ObjectDescriptor">
     <Position X="6.25" Y="0.5" Width="2.25" />
     <TypeIdentifier>
-      <HashCode>AACAAIAAAgACAAAAAAAAAAAgAAAAAAAAAAAAAEEAAAA=</HashCode>
-      <FileName>ObjectDescriptor.cs</FileName>
+      <HashCode>AAAAAIAAAgAAAAAAAAACAAAgAAAAAAAAAIAAIEFAAAA=</HashCode>
+      <FileName>Descriptors\ObjectDescriptor.cs</FileName>
     </TypeIdentifier>
   </Class>
-  <Interface Name="ObjectDB.IObjectDBManager">
+  <Interface Name="ObjectDB.IManager">
     <Position X="2.25" Y="0.5" Width="2" />
     <TypeIdentifier>
       <HashCode>SAAAAAAIAAAAAAAAAAAAAAAAAAAAAAAAAAACAAEAAAA=</HashCode>
-      <FileName>IObjectDBManager.cs</FileName>
+      <FileName>Interfaces\IManager.cs</FileName>
     </TypeIdentifier>
   </Interface>
-  <Enum Name="ObjectDB.SerializeType" Collapsed="true">
-    <Position X="12" Y="3.25" Width="1.5" />
+  <Enum Name="ObjectDB.SerializeType">
+    <Position X="6.5" Y="4.25" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
-      <FileName>SerializeType.cs</FileName>
+      <FileName>Enums\SerializeType.cs</FileName>
     </TypeIdentifier>
   </Enum>
   <Font Name="Segoe UI" Size="9" />

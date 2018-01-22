@@ -29,6 +29,7 @@ namespace ObjectDB
         {
             _dbDirectoryPath = string.Join("\\", objectDBFolderPath, dbName);
             InitDirectory();
+            LogWriter.LoggingDirectoryPath = _dbDirectoryPath;
             _descriptor = new DBDescriptor(_dbDirectoryPath);
             InitFiles();
         }
@@ -66,7 +67,7 @@ namespace ObjectDB
 
         private IEnumerable<string> GetDBFileNames()
         {
-            foreach (var objectName in _descriptor.ObjectDict.Keys)//TODO: edit this
+            foreach (var objectName in _descriptor.ObjectDict.Keys)
             {
                 yield return $"{objectName}.dat";
                 yield return $"{objectName}.descriptor";

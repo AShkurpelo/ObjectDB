@@ -30,20 +30,31 @@ namespace ObjectDB
 
         #endregion
 
-        #region Methods: Private
+        #region Methods: Public
 
-        private bool TrySetMember(string name, object value)
+        public bool TrySetMember(string name, object value)
         {
             if (!Members.ContainsKey(name))
             {
                 LogWriter.Log($"Error: Object dont's contains member {name}");
                 return false;
             }
-            Members[name] = value;
+            try
+            {
+                var castedValue = Convert.ChangeType(value, Members[name].GetType());
+                if (castedValue == null && value != null)
+                    throw new Exception();
+
+                Members[name] = value;
+            }
+            catch (Exception e)
+            {
+                LogWriter.Log($"Error: Can't cast {value.GetType().FullName} to {Members[name].GetType().FullName}");
+            }
             return true;
         }
 
-        private bool TryGetMember(string name, out object result)
+        public bool TryGetMember(string name, out object result)
         {
             result = null;
             if (!Members.ContainsKey(name))
@@ -54,10 +65,6 @@ namespace ObjectDB
             result = Members[name];
             return true;
         }
-
-        #endregion
-
-        #region Methods: Public
 
         public override IEnumerable<string> GetDynamicMemberNames()
         {
@@ -98,17 +105,6 @@ namespace ObjectDB
                 return false;
             }
         }
-
-        //public bool AddMember<T>(string memberName, T value)
-        //{
-        //    if (Members.ContainsKey(memberName))
-        //    {
-        //        LogWriter.Log($"Error: can't add existing member {memberName}");
-        //        return false;
-        //    }
-        //    Members[memberName] = value;
-        //    return true;
-        //}
 
         #endregion
 

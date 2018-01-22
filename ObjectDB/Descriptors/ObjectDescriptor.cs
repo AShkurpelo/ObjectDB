@@ -13,9 +13,11 @@ namespace ObjectDB
     {
         #region Fields: Private
 
-        private string _path;
+        private string objectName;
 
-        private FileStream _fs;
+        private string path;
+
+        private FileStream fs;
 
         #endregion
 
@@ -30,10 +32,11 @@ namespace ObjectDB
         public ObjectDescriptor(FileStream fs, bool isNew = false)
         {
             MemberDescriptions = new List<InstnaceInfo>();
-            _path = fs.Name;
-            _fs = fs;
+            path = fs.Name;
+            objectName = path.Split('\\').Last().Split('.').First();
+            this.fs = fs;
 
-            if (new FileInfo(_path).Length != 0)
+            if (new FileInfo(path).Length != 0)
                 Read();
             else
                 Write();
@@ -53,11 +56,16 @@ namespace ObjectDB
             return MemberDescriptions.Exists(member => member.InstanceName == instanceName);
         }
 
-        internal InstnaceInfo AddInstance(string instanceName, long position, Type type)
+        internal InstnaceInfo AddInstance(string instanceName, long position)
         {
-            var newInstanceInfo = new InstnaceInfo(Guid.NewGuid(), instanceName, position, type);
+            var newInstanceInfo = new InstnaceInfo(objectName, Guid.NewGuid(), instanceName, position);
             MemberDescriptions.Add(newInstanceInfo);
             return newInstanceInfo;
+        }
+
+        internal InstnaceInfo GetInstanceInfo(string instanceName)
+        {
+            return MemberDescriptions.Find(member => member.InstanceName == instanceName);
         }
 
         internal void Save()
@@ -74,15 +82,15 @@ namespace ObjectDB
         private void Read()
         {
             BinaryFormatter formatter = new BinaryFormatter();
-            MemberDescriptions = (List<InstnaceInfo>)formatter.Deserialize(_fs);
-            _fs.Position = 0;
+            MemberDescriptions = (List<InstnaceInfo>)formatter.Deserialize(fs);
+            fs.Position = 0;
         }
 
         private void Write()
         {
             BinaryFormatter formatter = new BinaryFormatter();
-            formatter.Serialize(_fs, MemberDescriptions);
-            _fs.Position = 0;
+            formatter.Serialize(fs, MemberDescriptions);
+            fs.Position = 0;
         }
 
         #endregion

@@ -7,24 +7,24 @@ namespace ObjectDB
     {
         #region Properties: Public
 
+        public string ObjectName { get; internal set; }
+
         public Guid Id { get; internal set; }
 
         public string InstanceName { get; internal set; }
 
         public long Position { get; internal set; }
 
-        public Type Type { get; internal set; }
-
         #endregion
 
         #region Constructors: Internal
 
-        internal InstnaceInfo(Guid id, string instanceName, long position, Type type)
+        internal InstnaceInfo(string objectName, Guid id, string instanceName, long position)
         {
+            ObjectName = objectName;
             Id = id;
             InstanceName = instanceName;
             Position = position;
-            Type = type;
         }
 
         #endregion

@@ -10,7 +10,7 @@ namespace ObjectDB_Example
     public class Student : DBObject
     {
         [ObjectDB]
-        public bool _estChe;
+        private bool prepared;
 
         [ObjectDB]
         public string Name { get; set; }
@@ -28,7 +28,7 @@ namespace ObjectDB_Example
         {
             this.Name = "<undefined>";
             this.Department = "<undefined>";
-            this._estChe = false;
+            this.prepared = false;
         }
 
         public Student(string name, string department, int hostel, bool hasFacilities = false)
@@ -37,15 +37,21 @@ namespace ObjectDB_Example
             this.Department = department;
             this.Hostel = hostel;
             this.HasFacilities = hasFacilities;
-            this._estChe = false;
         }
 
-        public void PrepareForExam(string subject) => this._estChe = true;
+        public void PrepareForExam(string subject)
+        {
+            prepared = true;
+        }
 
         public bool TryPassExam(string subject, out string mark)
         {
+            if (prepared)
+            {
+                mark = "C";
+                return true;
+            }
             mark = "Fx";
-            this._estChe = false;
             return false;
         }
     }

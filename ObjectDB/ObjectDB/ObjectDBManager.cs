@@ -7,12 +7,10 @@ using System.Runtime.Serialization.Formatters.Binary;
 namespace ObjectDB
 {
 
-    public sealed class ObjectDBManager : IObjectDBManager
+    public sealed class ObjectDBManager : IManager
     {
         #region Fields: Private
-
-        private readonly string _directory;
-
+        
         private SerializeType _serializeType;
 
         private readonly ObjectDBConnection _connection;
@@ -25,7 +23,7 @@ namespace ObjectDB
 
         private Func<string, Guid, DBObject> _readFync;
 
-        private Func<DBObject, string, string, bool> _writeFync;
+        private Func<DBObject, string, bool, bool> _writeFync;
 
         #endregion
 
@@ -54,7 +52,6 @@ namespace ObjectDB
         public ObjectDBManager(ObjectDBConnection connection)
         {
             _connection = connection;
-            _directory = connection.GetDBDirectoryPath();
             SerializeType = SerializeType.Binary;
         }
 
@@ -62,22 +59,28 @@ namespace ObjectDB
 
         #region Methods: Private
 
-        private bool WriteToBinaryFile(DBObject objData, string objectName, string instanceName)
+        private bool WriteToBinaryFile(DBObject objData, string instanceName, bool overwrite)
         {
             var formatter = new BinaryFormatter();
+            string objectName = objData.Info.ObjectName;
             var fileName = objectName + ".dat";
-            //bool isFirst = _connection.ContainsObject(objectName);
             var fs = _connection.GetFileStream(fileName);
+            var objectDescriptor = new ObjectDescriptor(_connection.GetFileStream(objectName + ".descriptor"));
 
             try
             {
-                var objectDescriptor = new ObjectDescriptor(_connection.GetFileStream(objectName + ".descriptor"));
-
-                if (!objectDescriptor.Exists(instanceName))
+                if (objectDescriptor.Exists(instanceName))
                 {
-                    objData.Info = objectDescriptor.AddInstance(instanceName, fs.Position, objData.GetType());
+                    if (!overwrite)
+                        return false;
+                    objData.Info = objectDescriptor.GetInstanceInfo(instanceName);
+                }
+                else
+                {
+                    objData.Info = objectDescriptor.AddInstance(instanceName, fs.Position);
                     _connection.AddObjectInstance(objectName);
                 }
+
                 fs.Position = objData.Info.Position;
                 formatter.Serialize(fs, objData.Members);
 
@@ -138,7 +141,7 @@ namespace ObjectDB
             {
                 var errorMessage = $"Error: can't get instance infos, database don't contain object {objectName}.";
                 LogWriter.Log(errorMessage);
-                return null;
+                return new Dictionary<string, Guid>();
             }
             var tempDescriptor = new ObjectDescriptor(_connection.GetFileStream(objectName + ".descriptor"));
             return tempDescriptor.MemberDescriptions.ToDictionary(member => member.InstanceName, member => member.Id);
@@ -149,11 +152,16 @@ namespace ObjectDB
             return _connection.ContainsObject(objectName);
         }
 
-        public bool SaveToDB(DBObject obj, string instanceName)//, bool replaceIfExist), bool uniqueName = false, bool unique = false)             
+        public bool Exists(string objectName, string instanceName)
+        {
+            var tempDescriptor = new ObjectDescriptor(_connection.GetFileStream(objectName + ".descriptor"));
+            return tempDescriptor.Exists(instanceName);
+        }
+
+        public bool SaveToDB(DBObject obj, string instanceName, bool overwrite = true)            
         {
             obj.FillMembers();
-            var objectName = obj.GetType().Name;
-            return _writeFync(obj, objectName, instanceName);
+            return _writeFync(obj, instanceName, overwrite);
         }
 
         public DBObject FetchFromDB(string objectName, string instanceName)
@@ -181,39 +189,42 @@ namespace ObjectDB
             return _readFync(objectName, instanceId);
         }
 
-        public bool TryFetchFromDB<T>(out T saveTo, string instanceName)
+        public bool TryFetchFromDB<T>(ref T target, string instanceName) where T : DBObject
         {
-            saveTo = default(T);
-            return false;
+            var objectName = typeof(T).Name;
+            var obj = FetchFromDB(objectName, instanceName);
+            if (target == null)
+            {
+                return false;
+            }
+
+            foreach (var member in target.MemberInfos)
+            {
+                if (!obj.TryGetMember(member.Name, out var memberValue))
+                    return false;
+
+                target.SetMemberValue(member, memberValue);
+            }
+
+            return true;
         }
 
-        public bool TryFetchFromDB<T>(out T saveTo, Guid instanceId)
+        public bool TryFetchFromDB<T>(ref T target, Guid instanceId) where T : DBObject
         {
-            saveTo = default(T);
-            return false;
-        }
+            var objectName = typeof(T).Name;
+            var obj = FetchFromDB(objectName, instanceId);
+            if (target == null)
+            {
+                return false;
+            }
 
-        //TODO: delete this shit
-        public bool TryFetchFromDB<T>(out T objectType)
-        {
-            objectType = default(T);
-            //string typeName = typeof(T).Name;
-            //DBObject dbBaseObj;
-            //try
-            //{
-            //    dbBaseObj = FetchFromDB(typeName);
-            //}
-            //catch (Exception e)
-            //{
-            //    string errorMessage = $"Error: can't fetch object {typeName}";
-            //    LogWriter.Log(errorMessage);
-            //    return false;
-            //}
-            //dynamic dynamicObj = dbBaseObj;
-            //foreach (var memberName in dbBaseObj.GetDynamicMemberNames())
-            //{
-                
-            //}
+            foreach (var member in target.MemberInfos)
+            {
+                if (obj[member.Name] == null)
+                    return false;
+
+                target.SetMemberValue(member, obj[member.Name]);
+            }
 
             return true;
         }
