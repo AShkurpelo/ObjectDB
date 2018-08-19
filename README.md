@@ -35,4 +35,6 @@ There are different ways to read instance from DB by manager:
   
 You can check ObjectDB_Example project for examples of use.
 
+All db files are blocked for outside editing while connection to DB is open.
+
 Also there are log file in DB directory and you can check it if something went wrong.
